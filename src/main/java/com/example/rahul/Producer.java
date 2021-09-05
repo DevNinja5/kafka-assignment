@@ -1,30 +1,28 @@
 package com.example.rahul;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.StringSerializer;
-
 import java.util.Properties;
 
 public class Producer {
     public static void main(String[] args) {
-        //Creating properties
-        String bootstrapServers="127.0.0.1:9092";
         Properties properties = new Properties();
-        properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        properties.put("bootstrap.servers", "localhost:9092");
+        properties.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        properties.put("value.serializer", "com.example.rahul.Serialization");
 
-        //Creating Producer
-        KafkaProducer<String,String> first_producer = new KafkaProducer<>(properties);
+        KafkaProducer<String, User> kafkaProducer = new KafkaProducer<>(properties);
 
-        //Creating producer record
-        ProducerRecord<String,String> record = new ProducerRecord<>("mytopic2","Hope this is running well");
-
-        //Sending the data
-        first_producer.send(record);
-        first_producer.flush();
-        first_producer.close();
+        try {
+            for (int i = 1; i <= 10; i++) {
+                User user = new User(i,"rahul",22,"Btech");
+                kafkaProducer.send(new ProducerRecord("mytopic2", String.valueOf(user.getId()), user));
+                //System.out.println(user);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            kafkaProducer.close();
+        }
     }
 }

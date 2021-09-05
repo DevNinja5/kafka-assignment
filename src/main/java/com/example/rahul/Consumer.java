@@ -1,44 +1,53 @@
 package com.example.rahul;
 
-import org.apache.kafka.clients.consumer.ConsumerConfig;
+
+
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.serialization.StringDeserializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.FileWriter;
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 public class Consumer {
     public static void main(String[] args) {
-        Logger logger= LoggerFactory.getLogger(Consumer.class.getName());
-        String bootstrapServers="127.0.0.1:9092";
-        String grp_id="third_app";
-        String topic="mytopic2";
-        //Creating consumer properties
-        Properties properties=new Properties();
-        properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,bootstrapServers);
-        properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,   StringDeserializer.class.getName());
-        properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,StringDeserializer.class.getName());
-        properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG,grp_id);
-        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,"earliest");
-        //creating consumer
-        KafkaConsumer<String,String> consumer= new KafkaConsumer<String,String>(properties);
-        //Subscribing
-        consumer.subscribe(Arrays.asList(topic));
-        //polling
-        while(true){
-            ConsumerRecords<String,String> records=consumer.poll(Duration.ofMillis(100));
-            for(ConsumerRecord<String,String> record: records){
-                logger.info("Key: "+ record.key() + ", Value:" +record.value());
-                logger.info("Partition:" + record.partition()+",Offset:"+record.offset());
+        Properties properties = new Properties();
+        properties.put("bootstrap.servers", "localhost:9092");
+        properties.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        properties.put("value.deserializer", "com.example.rahul.Deserialization");
+        properties.put("group.id", "user-group");
+
+        KafkaConsumer<String, User> kafkaConsumer = new KafkaConsumer<>(properties);
+        List topics = new ArrayList();
+        topics.add("mytopic2");
+        kafkaConsumer.subscribe(topics);
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            while (true) {
+                FileWriter fileWriter = new FileWriter("user-json-data.txt", true);
+
+                ConsumerRecords<String, User> consumerRecords = kafkaConsumer.poll(Duration.ofSeconds(1));
+
+                for (ConsumerRecord<String, User> consumerRecord : consumerRecords) {
+                    System.out.printf(
+                            "Topic: %s, Partition: %d, Value: %s%n",
+                            consumerRecord.topic(),
+                            consumerRecord.partition(),
+                            consumerRecord.value().toString());
+
+                    fileWriter.write(consumerRecord.value().toString() + "\n");
+                }
+                fileWriter.flush();
+                fileWriter.close();
             }
-
-
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            kafkaConsumer.close();
         }
     }
 }

@@ -1,18 +1,53 @@
-## Producer
+## Producer.java
 
-### To produce a single line message
+### To produce message as object
 Add your message in ProducerRecord
 ```java
-ProducerRecord<String,String> record = new ProducerRecord<>("mytopic2","Hope this is running well");
+for (int i = 1; i <= 10; i++){
+    User user=new User(i,"rahul",22,"Btech");
+    kafkaProducer.send(new ProducerRecord("mytopic2",String.valueOf(user.getId()),user));
+}
 ```
-Here `mytopic2` is name of ***topic*** and `Hope this is running well` is ***message***.
+Here `mytopic2` is name of ***topic*** & `user` is object of **User** class
 
-## Consumer
+## Consumer.java
 ### To see consuming messages
 Make sure you subscribed to the topic `mytopic2`
 ```java
-String topic="mytopic2";
-consumer.subscribe(Arrays.asList(topic));
+List topics = new ArrayList();
+topics.add("mytopic2");
+kafkaConsumer.subscribe(topics);
+```
+### Writing Data into a file when consuming it
+```java
+
+while (true) {
+        FileWriter fileWriter = new FileWriter("user-json-data.txt", true);
+        ConsumerRecords<String, User> consumerRecords = kafkaConsumer.poll(Duration.ofSeconds(1));
+        for (ConsumerRecord<String, User> consumerRecord : consumerRecords) {
+            System.out.printf(
+                "Topic: %s, Partition: %d, Value: %s%n",
+                consumerRecord.topic(),
+                consumerRecord.partition(),
+                consumerRecord.value().toString());
+            fileWriter.write(consumerRecord.value().toString() + "\n");
+        }
+        fileWriter.flush();
+        fileWriter.close();
+}
 ```
 ### Then
 Just run the `Consumer.java` file. A terminal will open and there you can see your all messages from beginning produced by Producer.
+
+### In user-json-data.txt
+> User{id=1, name='rahul', age=22, course='Btech'}
+> 
+> User{id=2, name='rahul', age=22, course='Btech'}
+> 
+> User{id=3, name='rahul', age=22, course='Btech'}
+> 
+> User{id=4, name='rahul', age=22, course='Btech'}
+> 
+> User{id=5, name='rahul', age=22, course='Btech'}
+> 
+> User{id=6, name='rahul', age=22, course='Btech'}
