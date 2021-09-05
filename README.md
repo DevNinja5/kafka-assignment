@@ -40,14 +40,14 @@ while (true) {
 Just run the `Consumer.java` file. A terminal will open and there you can see your all messages from beginning produced by Producer.
 
 ### In user-json-data.txt
-> User{id=1, name='rahul', age=22, course='Btech'}
+> {"id":1, "name":"rahul", "age":22, "course":"Btech"}
 > 
-> User{id=2, name='rahul', age=22, course='Btech'}
+> {"id":2, "name":"rahul", "age":22, "course":"Btech"}
 > 
-> User{id=3, name='rahul', age=22, course='Btech'}
+> {"id":3, "name":"rahul", "age":22, "course":"Btech"}
 > 
-> User{id=4, name='rahul', age=22, course='Btech'}
+> {"id":4, "name":"rahul", "age":22, "course":"Btech"}
 > 
-> User{id=5, name='rahul', age=22, course='Btech'}
+> {"id":5, "name":"rahul", "age":22, "course":"Btech"}
 > 
-> User{id=6, name='rahul', age=22, course='Btech'}
+
